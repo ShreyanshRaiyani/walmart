@@ -48,6 +48,10 @@ const Header: React.FC = () => {
           <div className="hidden md:flex items-center space-x-4">
             <span>Free shipping on orders $35+</span>
             <span>|</span>
+            <Link to="/eco-exchange" className="hover:text-yellow-300 transition-colors">
+              Eco Points Exchange
+            </Link>
+            <span>|</span>
             <span>Download the app</span>
           </div>
         </div>
@@ -87,10 +91,13 @@ const Header: React.FC = () => {
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
             {/* Eco Points */}
-            <div className="hidden md:flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-full">
+            <Link 
+              to="/eco-exchange"
+              className="hidden md:flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-full hover:bg-green-100 transition-colors"
+            >
               <Leaf className="w-5 h-5 text-green-600" />
               <span className="text-sm font-medium text-green-700">{totalEcoPoints} Eco Points</span>
-            </div>
+            </Link>
 
             {/* Favorites */}
             <button className="hidden md:flex items-center space-x-1 text-gray-600 hover:text-blue-600 transition-colors">
@@ -180,10 +187,13 @@ const Header: React.FC = () => {
           </form>
           
           {/* Mobile Eco Points */}
-          <div className="flex items-center justify-center space-x-2 bg-green-50 px-3 py-2 rounded-full mt-2">
+          <Link 
+            to="/eco-exchange"
+            className="flex items-center justify-center space-x-2 bg-green-50 px-3 py-2 rounded-full mt-2 hover:bg-green-100 transition-colors"
+          >
             <Leaf className="w-4 h-4 text-green-600" />
             <span className="text-sm font-medium text-green-700">{totalEcoPoints} Eco Points</span>
-          </div>
+          </Link>
         </div>
       </div>
 
@@ -200,6 +210,12 @@ const Header: React.FC = () => {
                 {category}
               </Link>
             ))}
+            <Link
+              to="/eco-exchange"
+              className="text-sm text-green-600 hover:text-green-800 whitespace-nowrap transition-colors font-medium"
+            >
+              🌱 Eco Exchange
+            </Link>
           </div>
         </div>
       </div>
@@ -218,6 +234,13 @@ const Header: React.FC = () => {
                 {category}
               </Link>
             ))}
+            <Link
+              to="/eco-exchange"
+              className="block text-green-600 hover:text-green-800 transition-colors font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              🌱 Eco Points Exchange
+            </Link>
           </div>
         </div>
       )}
