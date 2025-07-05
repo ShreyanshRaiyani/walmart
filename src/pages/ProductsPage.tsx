@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Star, Filter, SlidersHorizontal, Grid, List, ChevronDown } from 'lucide-react';
 import { products, getProductsByCategory, searchProducts } from '../data/products';
@@ -8,6 +8,7 @@ import { useCart } from '../contexts/CartContext';
 const ProductsPage: React.FC = () => {
   const { category } = useParams();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const searchQuery = searchParams.get('search');
   const { addItem } = useCart();
 
@@ -17,44 +18,53 @@ const ProductsPage: React.FC = () => {
   const [selectedRating, setSelectedRating] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    let result = products;
+    setIsLoading(true);
+    
+    // Add a small delay to show loading state
+    const timer = setTimeout(() => {
+      let result = [...products]; // Create a copy to avoid mutations
 
-    if (category) {
-      result = getProductsByCategory(category.replace('-', ' '));
-    } else if (searchQuery) {
-      result = searchProducts(searchQuery);
-    }
+      if (category) {
+        result = getProductsByCategory(category.replace('-', ' '));
+      } else if (searchQuery && searchQuery.trim()) {
+        result = searchProducts(searchQuery.trim());
+      }
 
-    // Apply filters
-    result = result.filter(product => {
-      const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
-      const ratingMatch = selectedRating === 0 || product.rating >= selectedRating;
-      return priceMatch && ratingMatch;
-    });
+      // Apply filters
+      result = result.filter(product => {
+        const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
+        const ratingMatch = selectedRating === 0 || product.rating >= selectedRating;
+        return priceMatch && ratingMatch;
+      });
 
-    // Apply sorting
-    switch (sortBy) {
-      case 'price-low':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        result.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'newest':
-        result.sort((a, b) => parseInt(b.id) - parseInt(a.id));
-        break;
-      default:
-        // Featured - keep original order
-        break;
-    }
+      // Apply sorting
+      switch (sortBy) {
+        case 'price-low':
+          result.sort((a, b) => a.price - b.price);
+          break;
+        case 'price-high':
+          result.sort((a, b) => b.price - a.price);
+          break;
+        case 'rating':
+          result.sort((a, b) => b.rating - a.rating);
+          break;
+        case 'newest':
+          result.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+          break;
+        default:
+          // Featured - keep original order
+          break;
+      }
 
-    setFilteredProducts(result);
-  }, [category, searchQuery, sortBy, priceRange, selectedRating]);
+      setFilteredProducts(result);
+      setIsLoading(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [category, searchQuery, sortBy, priceRange, selectedRating, location.search]);
 
   const handleAddToCart = (product: any) => {
     addItem({
@@ -77,13 +87,27 @@ const ProductsPage: React.FC = () => {
     setSortBy('featured');
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Searching products...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{getPageTitle()}</h1>
-          <p className="text-gray-600">{filteredProducts.length} products found</p>
+          <p className="text-gray-600">
+            {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
+            {searchQuery && ` for "${searchQuery}"`}
+          </p>
         </div>
 
         <div className="flex gap-8">
@@ -108,17 +132,19 @@ const ProductsPage: React.FC = () => {
                     <input
                       type="number"
                       value={priceRange[0]}
-                      onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
+                      onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
                       className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
                       placeholder="Min"
+                      min="0"
                     />
                     <span className="text-gray-500">to</span>
                     <input
                       type="number"
                       value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                      onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 2000])}
                       className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
                       placeholder="Max"
+                      min="0"
                     />
                   </div>
                 </div>
@@ -245,7 +271,7 @@ const ProductsPage: React.FC = () => {
                   
                   <div className="p-4 flex-1">
                     <Link to={`/product/${product.id}`}>
-                      <h3 className="font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+                      <h3 className="font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors line-clamp-2">
                         {product.name}
                       </h3>
                     </Link>
@@ -290,13 +316,33 @@ const ProductsPage: React.FC = () => {
             {/* No results */}
             {filteredProducts.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg mb-4">No products found matching your criteria.</p>
-                <button
-                  onClick={resetFilters}
-                  className="text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Clear all filters
-                </button>
+                <div className="text-gray-400 mb-4">
+                  <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <p className="text-gray-500 text-lg mb-4">
+                  {searchQuery 
+                    ? `No products found for "${searchQuery}"`
+                    : 'No products found matching your criteria.'
+                  }
+                </p>
+                <div className="space-x-4">
+                  <button
+                    onClick={resetFilters}
+                    className="text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Clear all filters
+                  </button>
+                  {searchQuery && (
+                    <Link
+                      to="/products"
+                      className="text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      Browse all products
+                    </Link>
+                  )}
+                </div>
               </div>
             )}
           </div>
