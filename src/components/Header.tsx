@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, MapPin, Heart } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, MapPin, Heart, Leaf } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useUser } from '../contexts/UserContext';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const { itemCount } = useCart();
+  const { itemCount, totalEcoPoints } = useCart();
   const { user, logout } = useUser();
   const navigate = useNavigate();
 
@@ -81,6 +81,12 @@ const Header: React.FC = () => {
 
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
+            {/* Eco Points */}
+            <div className="hidden md:flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-full">
+              <Leaf className="w-5 h-5 text-green-600" />
+              <span className="text-sm font-medium text-green-700">{totalEcoPoints} Eco Points</span>
+            </div>
+
             {/* Favorites */}
             <button className="hidden md:flex items-center space-x-1 text-gray-600 hover:text-blue-600 transition-colors">
               <Heart className="w-6 h-6" />
@@ -161,6 +167,12 @@ const Header: React.FC = () => {
             />
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           </form>
+          
+          {/* Mobile Eco Points */}
+          <div className="flex items-center justify-center space-x-2 bg-green-50 px-3 py-2 rounded-full mt-2">
+            <Leaf className="w-4 h-4 text-green-600" />
+            <span className="text-sm font-medium text-green-700">{totalEcoPoints} Eco Points</span>
+          </div>
         </div>
       </div>
 
