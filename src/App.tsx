@@ -11,6 +11,7 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import AccountPage from './pages/AccountPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
+import EcoExchangePage from './pages/EcoExchangePage';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/account" element={<AccountPage />} />
                 <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+                <Route path="/eco-exchange" element={<EcoExchangePage />} />
               </Routes>
             </main>
             <Footer />
