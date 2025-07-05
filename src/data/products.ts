@@ -687,12 +687,26 @@ export const getProductById = (id: string): Product | undefined => {
 };
 
 export const searchProducts = (query: string): Product[] => {
-  const lowercaseQuery = query.toLowerCase();
-  return products.filter(product =>
-    product.name.toLowerCase().includes(lowercaseQuery) ||
-    product.description.toLowerCase().includes(lowercaseQuery) ||
-    product.category.toLowerCase().includes(lowercaseQuery)
-  );
+  if (!query || query.trim() === '') {
+    return products;
+  }
+  
+  const lowercaseQuery = query.toLowerCase().trim();
+  const searchTerms = lowercaseQuery.split(' ').filter(term => term.length > 0);
+  
+  return products.filter(product => {
+    const searchableText = [
+      product.name,
+      product.description,
+      product.category,
+      ...product.features
+    ].join(' ').toLowerCase();
+    
+    // Check if all search terms are found in the product
+    return searchTerms.every(term => 
+      searchableText.includes(term)
+    );
+  });
 };
 
 export const getFeaturedProducts = (): Product[] => {
